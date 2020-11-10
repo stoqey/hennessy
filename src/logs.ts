@@ -1,7 +1,6 @@
 import debug from "debug";
-import { APP_NAME } from "./config";
 
-const loggingPrefix = APP_NAME;
+const loggingPrefix = 'hennessy';
 
 /**
  * Use to log in general case

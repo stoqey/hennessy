@@ -8,17 +8,23 @@ one constructor
 - use envs
 - use option constructor options
  */
-
+import { EventEmitter } from "events";
 import { isEmpty, get as _get } from "lodash";
-import ibkr, { IBKRConnection, IbkrEvents } from "@stoqey/ibkr";
-import { FinnhubWS } from "@stoqey/finnhub";
+import ibkr, { IBKRConnection, IBKREVENTS, IbkrEvents } from "@stoqey/ibkr";
+import { FinnhubWS, FinnhubWSEvents } from "@stoqey/finnhub";
 import { MarketDataProviders } from "./providers";
+
+export enum HEN {
+  start = "START",
+  data = "DATA",
+  error = "error",
+}
 
 /**
  * Hennessy provider
  */
 interface IHennessy {
-  provider: MarketDataProviders; // or process.env.HEN_PROVIDER
+  providerType: MarketDataProviders; // or process.env.HEN_PROVIDER
   env?: {
     finnhubKey?: string; // or process.env.FINNHUB_KEY
     ibPort?: number; // or process.env.IB_PORT
@@ -29,42 +35,88 @@ interface IHennessy {
 /**
  * Hennessy APP
  */
-export class Hennessy {
+export class Hennessy extends EventEmitter {
+  providerType: MarketDataProviders = MarketDataProviders.IBKR;
+
   provider: IbkrEvents | FinnhubWS | null = null;
 
+  started: boolean = false;
+
   constructor(args?: IHennessy) {
+    super();
+
     const startConfig = async (): Promise<void> => {
-      const { provider: providerType = MarketDataProviders.IBKR, env = null } =
+      const { providerType = MarketDataProviders.IBKR, env = null } =
         args || {};
 
+      const hennessy = this;
+      this.providerType = providerType; // set providerType
       switch (providerType) {
         case MarketDataProviders.FINNHUB:
           const finnhubToken = _get(process.env, "FINNHUB_KEY", undefined);
+
           this.provider = new FinnhubWS(finnhubToken);
 
-        //   All events here
+          const finnhubProvider = this.provider;
+
+          //   onReady
+          finnhubProvider.once(FinnhubWSEvents.onReady, () => {
+            finnhubProvider.emit(HEN.start, true);
+            hennessy.started = true;
+          });
+
+          //   onData
+          finnhubProvider.on(FinnhubWSEvents.onData, (data) => {
+            finnhubProvider.emit(HEN.data, data);
+          });
+
+          //   on error
+          finnhubProvider.on(FinnhubWSEvents.onError, (error) => {
+            finnhubProvider.emit(HEN.error, error);
+          });
+
+          //  check on ready
+          // Todo   All events here
           break;
         case MarketDataProviders.IBKR:
-          const ibProvider = IbkrEvents.Instance; // start ibkrEvents
+          const ibEventsProvider = IbkrEvents.Instance; // start ibkrEvents
 
           const IB_HOST = _get(process.env, "IB_HOST", undefined);
           const IB_PORT = _get(process.env, "IB_PORT", undefined);
 
+          let ib = null;
+
+          //   If we have the envs
           if (IB_HOST && IB_PORT) {
-            const ib = await ibkr({
+            ib = await ibkr({
               port: +IB_PORT,
               host: IB_HOST,
             });
-
-            if (!ib) {
-              throw new Error("error connecting to ibkr");
-            }
-
-            this.provider = ibProvider;
-
-            // TODO all events here
+          } else {
+            ib = await ibkr();
           }
-          throw new Error("incorrect IB_PORT or IB_PORT, please try again");
+
+          if (!ib) {
+            throw new Error("error connecting to ibkr");
+          }
+
+          this.provider = ibEventsProvider;
+
+          const ibkrProvider = this.provider;
+
+          //   start
+          ibkrProvider.emit(HEN.start, true);
+          hennessy.started = true;
+
+          //   error
+          ibkrProvider.on(IBKREVENTS.ERROR, (data) => {
+            ibkrProvider.emit(HEN.error, data);
+          });
+
+          //   on data / price updates
+          ibkrProvider.on(IBKREVENTS.ON_PRICE_UPDATES, (error) => {
+            ibkrProvider.emit(HEN.data, error);
+          });
 
           break;
         default:
@@ -77,14 +129,53 @@ export class Hennessy {
   }
 
   /**
-   * addSymbol
+   * startDrinking
    */
-  public addSymbol() {}
+  public startDrinking() {
+      if(!this.started)
+       this.provider?.emit(HEN.start, true);
+       this.started = true;
+  }
+
+  /**
+   * addSymbol
+   * IBKR { symbol, tickType }
+   * FINNHUB symbol
+   */
+  public addSymbol(data: string | object) {
+    const providerType = this.providerType;
+    const provider = this.provider;
+
+    if (provider)
+      switch (providerType) {
+        case MarketDataProviders.FINNHUB:
+          (provider as FinnhubWS).addSymbol(data as string);
+          break;
+        default:
+        case MarketDataProviders.IBKR:
+          provider.emit(IBKREVENTS.SUBSCRIBE_PRICE_UPDATES, data);
+          break;
+      }
+  }
 
   /**
    * removeSymbol
    */
-  public removeSymbol() {}
+  public removeSymbol(symbol: string) {
+    const providerType = this.providerType;
+    const provider = this.provider;
+
+    if (provider)
+      switch (providerType) {
+        case MarketDataProviders.FINNHUB:
+          (provider as FinnhubWS).removeSymbol(symbol);
+          break;
+        default:
+        case MarketDataProviders.IBKR:
+          provider.emit(IBKREVENTS.UNSUBSCRIBE_PRICE_UPDATES, symbol);
+          break;
+      }
+  }
 
   /**
    * switchToProvider
