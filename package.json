@@ -63,6 +63,8 @@
   },
   "homepage": "https://github.com/stoqey/hennessy#readme",
   "dependencies": {
+    "@stoqey/finnhub": "^0.2.1",
+    "@stoqey/ibkr": "^1.6.4",
     "debug": "^4.2.0",
     "dotenv": "^8.2.0",
     "lodash": "^4.17.20",
