@@ -1,7 +1,7 @@
 {
-  "name": "@stoqey/promethazine",
-  "version": "0.0.7",
-  "description": "Kubernetes Automation on DigitalOcean",
+  "name": "@stoqey/hennessy",
+  "version": "0.0.1",
+  "description": "Hennessy - A very special Cognac (Market Data/IBKR/FINNHUB/BINANCE)",
   "private": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,8 +15,6 @@
     "build": "rimraf dist && tsc",
     "test": "mocha src/**/*test.ts --full-trace",
     "do": "mocha src/do/*test.ts --full-trace",
-    "k8s": "mocha src/k8s/*test.ts --full-trace",
-    "deploy": "mocha src/k8s/deployment/*test.ts --full-trace",
     "job": "mocha src/k8s/job/*test.ts --full-trace",
     "eslint": "eslint ./src --fix --config=.mocharc.json",
     "prepublishOnly": "npm run build"
@@ -37,25 +35,34 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/stoqey/promethazine.git"
+    "url": "git+ssh://git@github.com/stoqey/hennessy.git"
   },
   "keywords": [
     "ai",
     "automation",
-    "kubernetes",
-    "digital",
-    "ocean",
+    "crypto-api",
+    "crypto",
+    "binance-api",
+    "binance",
+    "ibkr-api",
+    "ibkr",
+    "ib",
+    "finnhub-api",
+    "finnhub",
+    "options-api",
+    "stocks",
+    "stocks-api",
+    "market-data",
     "stoqey",
     "stoqey inc"
   ],
   "author": "Stoqey Inc <support@stoqey.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/stoqey/promethazine/issues"
+    "url": "https://github.com/stoqey/hennessy/issues"
   },
-  "homepage": "https://github.com/stoqey/promethazine#readme",
+  "homepage": "https://github.com/stoqey/hennessy#readme",
   "dependencies": {
-    "@kubernetes/client-node": "^0.12.2",
     "debug": "^4.2.0",
     "dotenv": "^8.2.0",
     "lodash": "^4.17.20",
