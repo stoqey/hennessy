@@ -1,4 +1,4 @@
 export enum MarketDataProviders {
-    FINNHUB = 'finnhub',
-    IBKR = 'ibkr'
-};
+  FINNHUB = "finnhub",
+  IBKR = "ibkr",
+}
