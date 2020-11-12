@@ -1,6 +1,6 @@
 {
   "name": "@stoqey/hennessy",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Hennessy - A very special Cognac (Market Data/IBKR/FINNHUB/BINANCE)",
   "private": false,
   "main": "dist/index.js",
