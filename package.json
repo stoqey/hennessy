@@ -14,6 +14,7 @@
   "scripts": {
     "build": "rimraf dist && tsc",
     "test": "mocha src/*test.ts --full-trace",
+    "quote": "mocha src/quote.test.ts --full-trace",
     "eslint": "eslint ./src --fix --config=.mocharc.json",
     "prepublishOnly": "npm run build"
   },

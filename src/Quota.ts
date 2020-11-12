@@ -16,7 +16,7 @@ export const GetQuotePrice = async (
   contractSymbol: ContractSymbol,
 ): Promise<number | undefined> => {
   let closePrice: number | undefined;
-  const HistoricalDataManager = HistoricalData.Instance;
+
   const symbol =
     typeof contractSymbol === "string"
       ? contractSymbol
@@ -37,6 +37,7 @@ export const GetQuotePrice = async (
       symbol,
     );
 
+    const HistoricalDataManager = HistoricalData.Instance;
     const marketData = await HistoricalDataManager.reqHistoricalData({
       symbol,
       whatToShow: "TRADES",
